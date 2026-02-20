@@ -1,10 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="refresh" content="0; url=/AndreaArgenio/attendance/">
+<meta charset="UTF-8">
+<title>NexeraGen Attendance</title>
+<style>
+body{font-family:Arial;background:#f4f6f8;text-align:center;margin:40px}
+button{padding:12px 20px;margin:5px;border:none;background:#222;color:white;border-radius:8px}
+table{margin:auto;margin-top:25px;border-collapse:collapse}
+td,th{padding:8px 14px;border-bottom:1px solid #ddd}
+</style>
 </head>
 <body>
-Redirecting...
+
+<h2>NexeraGen Attendance</h2>
+
+<select id="name"></select><br><br>
+
+<button onclick="clock('IN')">Clock In</button>
+<button onclick="clock('OUT')">Clock Out</button>
+
+<p id="msg"></p>
+
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Time</th></tr></thead>
+<tbody id="log"></tbody>
+</table>
+
+<script>
+const API="PASTE_YOUR_EXEC_URL_HERE";
+
+/* employees */
+fetch(API+"?employees=1")
+.then(r=>r.json())
+.then(list=>{
+  const sel=document.getElementById("name");
+  sel.innerHTML='<option value="">Select name</option>';
+  list.forEach(n=>sel.innerHTML+=`<option>${n}</option>`);
+});
+
+/* clock */
+function clock(type){
+  const name=document.getElementById("name").value;
+  if(!name)return alert("Select name");
+
+  fetch(API,{
+    method:"POST",
+    body:JSON.stringify({name,type})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    document.getElementById("msg").innerText=d.message;
+    load();
+  });
+}
+
+/* history */
+function load(){
+  fetch(API)
+  .then(r=>r.json())
+  .then(rows=>{
+    document.getElementById("log").innerHTML=rows.map(r=>
+      `<tr><td>${r.name}</td><td>${r.type}</td><td>${new Date(r.timestamp).toLocaleString()}</td></tr>`
+    ).join("");
+  });
+}
+
+load();
+setInterval(load,10000);
+</script>
+
 </body>
 </html>
- 
